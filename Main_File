@@ -1,0 +1,33 @@
+import sqlite3
+from flask import Flask, jsonify, request
+
+app = Flask(__name__)
+
+def load_crypto_data():
+    crypto_data = {}
+    con = sqlite3.connect(r"C:\Users\Evangelos\Crypto.db")
+    cur = con.cursor()
+    query = ("SELECT Name, Price, Market_Cap, Token_Supply, Ticker FROM Crypto")
+    cur.execute(query)
+    rows = cur.fetchall()
+    con.close()
+    for row in rows:
+        Name, Price, Market_Cap, Token_Supply, Ticker = row
+        crypto_data[Name] = (Price, Market_Cap, Token_Supply, Ticker)
+    return crypto_data
+
+@app.route("/get-crypto/<name>")
+def get_crypto(name):
+    con = sqlite3.connect(r"C:\Users\Evangelos\Crypto.db")
+    cur = con.cursor()
+    sql_query = "SELECT * FROM Crypto WHERE Name = ?"
+    result = cur.execute(sql_query, (name,)).fetchone()
+    if result:
+        keys = [desc[0] for desc in cur.description]
+        crypto_dict = dict(zip(keys, result))
+        return jsonify(crypto_dict)
+    else:
+        return jsonify({"error": f"{name} nicht gefunden."})
+
+if __name__ == '__main__':
+    app.run(debug=True)
