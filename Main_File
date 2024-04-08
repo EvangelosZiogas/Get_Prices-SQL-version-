@@ -40,8 +40,8 @@ def get_cryptolist():
     rows = cur.fetchall()
     con.close()
     filtered_crypto = {
-        company: (price, market_cap)
-        for company, price, market_cap, _, _ in rows
+        company: (price, market_cap, token_supply, ticker)
+        for company, price, market_cap, token_supply, ticker in rows
         if float(price) > price_above and (market_cap_above == 0 or float(market_cap) > market_cap_above)
     }
     return jsonify(filtered_crypto)
