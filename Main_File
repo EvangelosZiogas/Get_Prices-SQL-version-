@@ -29,5 +29,22 @@ def get_crypto(name):
     else:
         return jsonify({"error": f"{name} nicht gefunden."})
 
+@app.route("/get-cryptolist")
+def get_cryptolist():
+    con = sqlite3.connect(r"C:\Users\Evangelos\Crypto.db")
+    cur = con.cursor()
+    price_above = float(request.args.get('price_above'))
+    market_cap_above = float(request.args.get('market_cap_above', 0))
+    sql_query = f"SELECT * FROM Crypto WHERE Price > {price_above} AND Market_Cap > {market_cap_above}"
+    cur.execute(sql_query)
+    rows = cur.fetchall()
+    con.close()
+    filtered_crypto = {
+        company: (price, market_cap)
+        for company, price, market_cap, _, _ in rows
+        if float(price) > price_above and (market_cap_above == 0 or float(market_cap) > market_cap_above)
+    }
+    return jsonify(filtered_crypto)
+
 if __name__ == '__main__':
     app.run(debug=True)
