@@ -9,9 +9,8 @@ def load_crypto_data():
     cur = con.cursor()
     query = ("SELECT Name, Price, Market_Cap, Token_Supply, Ticker FROM Crypto")
     cur.execute(query)
-    rows = cur.fetchall()
     con.close()
-    for row in rows:
+    for row in cur:
         Name, Price, Market_Cap, Token_Supply, Ticker = row
         crypto_data[Name] = (Price, Market_Cap, Token_Supply, Ticker)
     return crypto_data
@@ -37,14 +36,14 @@ def get_cryptolist():
     market_cap_above = float(request.args.get('market_cap_above', 0))
     sql_query = f"SELECT * FROM Crypto WHERE Price > {price_above} AND Market_Cap > {market_cap_above}"
     cur.execute(sql_query)
-    rows = cur.fetchall()
-    con.close()
     filtered_crypto = {
         company: (price, market_cap, token_supply, ticker)
-        for company, price, market_cap, token_supply, ticker in rows
+        for company, price, market_cap, token_supply, ticker in cur
         if float(price) > price_above and (market_cap_above == 0 or float(market_cap) > market_cap_above)
     }
+    con.close()
     return jsonify(filtered_crypto)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
